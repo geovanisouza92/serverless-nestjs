@@ -1,7 +1,183 @@
 {
   "version": 2,
-  "projects": {},
+  "projects": {
+    "api": {
+      "root": "apps/api",
+      "sourceRoot": "apps/api/src",
+      "projectType": "application",
+      "prefix": "api",
+      "generators": {},
+      "targets": {
+        "build": {
+          "executor": "@flowaccount/nx-serverless:build",
+          "options": {
+            "outputPath": "dist/apps/api",
+            "package": "apps/api",
+            "serverlessConfig": "apps/api/serverless.yml",
+            "servicePath": "apps/api",
+            "tsConfig": "apps/api/tsconfig.app.json",
+            "provider": "aws",
+            "processEnvironmentFile": "env.json"
+          },
+          "configurations": {
+            "dev": {
+              "optimization": false,
+              "sourceMap": false,
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "2mb",
+                  "maximumError": "5mb"
+                }
+              ]
+            },
+            "production": {
+              "optimization": true,
+              "sourceMap": false,
+              "extractCss": true,
+              "namedChunks": false,
+              "extractLicenses": true,
+              "vendorChunk": false,
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "2mb",
+                  "maximumError": "5mb"
+                }
+              ],
+              "fileReplacements": [
+                {
+                  "replace": "apps/api/environment.ts",
+                  "with": "apps/api/environment.prod.ts"
+                }
+              ]
+            }
+          }
+        },
+        "serve": {
+          "executor": "@flowaccount/nx-serverless:offline",
+          "options": {
+            "buildTarget": "api:build",
+            "config": "apps/api/serverless.yml",
+            "location": "dist/apps/api",
+            "port": 7777
+          },
+          "configurations": {
+            "dev": {
+              "buildTarget": "api:build:dev"
+            },
+            "production": {
+              "buildTarget": "api:build:production"
+            }
+          }
+        },
+        "deploy": {
+          "executor": "@flowaccount/nx-serverless:deploy",
+          "options": {
+            "buildTarget": "api:build:production",
+            "config": "apps/api/serverless.yml",
+            "location": "dist/apps/api",
+            "package": "dist/apps/api",
+            "stage": "dev"
+          }
+        },
+        "destroy": {
+          "executor": "@flowaccount/nx-serverless:destroy",
+          "options": {
+            "buildTarget": "api:build:production",
+            "config": "apps/api/serverless.yml",
+            "location": "dist/apps/api",
+            "package": "dist/apps/api"
+          }
+        },
+        "lint": {
+          "executor": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "exclude": [
+              "**/node_modules/**",
+              "!apps/api/**/*"
+            ],
+            "tsConfig": [
+              "apps/api/tsconfig.spec.json"
+            ]
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": [
+            "coverage/apps/api"
+          ],
+          "options": {
+            "jestConfig": "apps/api/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      }
+    },
+    "web": {
+      "root": "apps/web",
+      "sourceRoot": "apps/web/src",
+      "projectType": "application",
+      "targets": {
+        "build": {
+          "executor": "@nrwl/node:build",
+          "outputs": [
+            "{options.outputPath}"
+          ],
+          "options": {
+            "outputPath": "dist/apps/web",
+            "main": "apps/web/src/main.ts",
+            "tsConfig": "apps/web/tsconfig.app.json",
+            "assets": [
+              "apps/web/src/assets"
+            ]
+          },
+          "configurations": {
+            "production": {
+              "optimization": true,
+              "extractLicenses": true,
+              "inspect": false,
+              "fileReplacements": [
+                {
+                  "replace": "apps/web/src/environments/environment.ts",
+                  "with": "apps/web/src/environments/environment.prod.ts"
+                }
+              ]
+            }
+          }
+        },
+        "serve": {
+          "executor": "@nrwl/node:execute",
+          "options": {
+            "buildTarget": "web:build"
+          }
+        },
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "outputs": [
+            "{options.outputFile}"
+          ],
+          "options": {
+            "lintFilePatterns": [
+              "apps/web/**/*.ts"
+            ]
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": [
+            "coverage/apps/web"
+          ],
+          "options": {
+            "jestConfig": "apps/web/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      }
+    }
+  },
   "cli": {
-    "defaultCollection": "@nrwl/workspace"
-  }
+    "defaultCollection": "@nrwl/nest"
+  },
+  "defaultProject": "web"
 }
