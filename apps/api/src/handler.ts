@@ -1,35 +1,33 @@
 import { NestFactory } from '@nestjs/core';
+import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 import { APIGatewayProxyHandler, APIGatewayProxyResult } from 'aws-lambda';
 import * as serverless from 'serverless-http';
 import { AppModule } from '@web';
 
-async function bootstrap() {
+async function bootstrapExpress() {
   const app = await NestFactory.create(AppModule);
   await app.init();
-  return serverless(app.getHttpAdapter().getInstance());
+  return serverless(app.getHttpAdapter().getInstance(), {
+    basePath: '/express',
+  });
 }
 
-let nestjsHandler: serverless.Handler;
-export const handler: APIGatewayProxyHandler = async(event, context) => {
-  nestjsHandler ??= (await bootstrap());
-  return (await nestjsHandler(event, context)) as APIGatewayProxyResult;
+let expressHandler: serverless.Handler;
+export const express: APIGatewayProxyHandler = async(event, context) => {
+  expressHandler ??= (await bootstrapExpress());
+  return (await expressHandler(event, context)) as APIGatewayProxyResult;
 };
 
-export const helloWorld: APIGatewayProxyHandler = async (
-  event,
-  _context,
-  callback
-) => {
-  return {
-    statusCode: 200,
-    body: JSON.stringify(
-      {
-        message:
-          'Go Serverless Webpack (Typescript) v1.0! Your function executed successfully!',
-        input: event,
-      },
-      null,
-      2
-    ),
-  };
+async function bootstrapFastify() {
+  const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
+  await app.init();
+  return serverless(app.getHttpAdapter().getInstance(), {
+    basePath: '/fastify',
+  });
+}
+
+let fastifyHandler: serverless.Handler;
+export const fastify: APIGatewayProxyHandler = async(event, context) => {
+  fastifyHandler ??= (await bootstrapFastify());
+  return (await fastifyHandler(event, context)) as APIGatewayProxyResult;
 };

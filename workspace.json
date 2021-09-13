@@ -38,6 +38,7 @@
               "namedChunks": false,
               "extractLicenses": true,
               "vendorChunk": false,
+              "webpackConfig": "apps/api/webpack.config.js",
               "budgets": [
                 {
                   "type": "initial",

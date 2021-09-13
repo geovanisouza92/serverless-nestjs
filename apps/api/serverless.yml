@@ -2,6 +2,10 @@ service: api
 frameworkVersion: '>=1.1.0'
 plugins:
   - serverless-offline
+# Uncomment this to avoid cold start on serverless-offline
+custom:
+  serverless-offline:
+    allowCache: true
 package:
   individually: true
   excludeDevDependencies: false
@@ -10,15 +14,15 @@ provider:
   region: us-east-1
   runtime: nodejs12.x
 functions:
-  hello-world:
-    handler: src/handler.helloWorld
+  express:
+    handler: src/handler.express
     events:
       - http:
           method: get
-          path: hello-world
-  nestjs:
-    handler: src/handler.handler
+          path: express
+  fastify:
+    handler: src/handler.fastify
     events:
       - http:
           method: get
-          path: nestjs
+          path: fastify
